@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import NewsList from '@/components/news-list';
 import {
   getAvailableNewsMonths,
@@ -7,24 +8,29 @@ import {
   getNewsForYearAndMonth,
 } from '@/lib/news';
 
-export default async function FilteredNewsPage({ params }) {
-  // دریافت پارامترهای دینامیک به صورت آسنکرون
-  const { filter = [] } = await params; // استفاده از await برای پارامترها
+export default function FilteredNewsPage({ params }) {
+  const filter = params.filter;
 
-  // از اینجا به بعد می‌توانید از پارامترها استفاده کنید
-  const selectedYear = filter[0];
-  const selectedMonth = filter[1];
+  const selectedYear = filter?.[0];
+  const selectedMonth = filter?.[1];
 
-  let news = [];
+  let news;
   let links = getAvailableNewsYears();
 
-  // بر اساس پارامترها، اخبار مربوطه را بارگذاری کنید
   if (selectedYear && !selectedMonth) {
-    news = await getNewsForYear(selectedYear);
+    news = getNewsForYear(selectedYear);
     links = getAvailableNewsMonths(selectedYear);
-  } else if (selectedYear && selectedMonth) {
-    news = await getNewsForYearAndMonth(selectedYear, selectedMonth);
+  }
+
+  if (selectedYear && selectedMonth) {
+    news = getNewsForYearAndMonth(selectedYear, selectedMonth);
     links = [];
+  }
+
+  let newsContent = <p>No news found for the selected period.</p>;
+
+  if (news && news.length > 0) {
+    newsContent = <NewsList news={news} />;
   }
 
   if (
@@ -33,12 +39,6 @@ export default async function FilteredNewsPage({ params }) {
       !getAvailableNewsMonths(selectedYear).includes(+selectedMonth))
   ) {
     throw new Error('Invalid filter.');
-  }
-
-  let newsContent = <p>No news found for the selected period.</p>;
-
-  if (news && news.length > 0) {
-    newsContent = <NewsList news={news} />;
   }
 
   return (

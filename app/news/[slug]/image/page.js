@@ -1,17 +1,17 @@
-import { DUMMY_NEWS } from "@/dummy-news";
-import { notFound } from "next/navigation";
+import { notFound } from 'next/navigation';
 
-export default async function ImagePage({ params }) {
-  // اطمینان از اینکه params به صورت آسنکرون مدیریت شود
-  const { slug } = await Promise.resolve(params); // انتظار برای بارگذاری params
-  const newsItem = DUMMY_NEWS.find((newsItem) => newsItem.slug === slug);
+import { DUMMY_NEWS } from '@/dummy-news';
+
+export default function ImagePage({ params }) {
+  const newsItemSlug = params.slug;
+  const newsItem = DUMMY_NEWS.find((newsItem) => newsItem.slug === newsItemSlug);
 
   if (!newsItem) {
-    notFound(); // اگر خبری پیدا نشد، به صفحه خطا می‌رود
+    notFound();
   }
 
   return (
-    <div>
+    <div className="fullscreen-image">
       <img src={`/images/news/${newsItem.image}`} alt={newsItem.title} />
     </div>
   );
