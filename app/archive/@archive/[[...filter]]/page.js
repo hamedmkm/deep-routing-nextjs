@@ -1,39 +1,30 @@
-import Link from "next/link";
-import NewsList from "@/component/News-List/news-list";
+import Link from 'next/link';
+import NewsList from '@/components/news-list';
 import {
   getAvailableNewsMonths,
   getAvailableNewsYears,
   getNewsForYear,
   getNewsForYearAndMonth,
-} from "@/lib/news/news";
+} from '@/lib/news';
 
 export default async function FilteredNewsPage({ params }) {
-  // params.filter نیاز به await ندارد، این ویژگی به طور خودکار در Next.js به صورت آسنکرون مدیریت می‌شود.
-  const filter = params.filter || []; // اگر filter نبود، یک آرایه خالی به جای آن قرار می‌دهیم
-  const selectedYear = filter[0]; // فیلتر اول که معمولاً سال است
-  const selectedMonth = filter[1]; // فیلتر دوم که ممکن است ماه باشد
+  // دریافت پارامترهای دینامیک به صورت آسنکرون
+  const { filter = [] } = await params; // استفاده از await برای پارامترها
 
-  let news;
-  let links = getAvailableNewsYears(); // دریافت لیست سال‌ها
+  // از اینجا به بعد می‌توانید از پارامترها استفاده کنید
+  const selectedYear = filter[0];
+  const selectedMonth = filter[1];
 
-  // اگر سال انتخاب شده باشد و ماه انتخاب نشده باشد
+  let news = [];
+  let links = getAvailableNewsYears();
+
+  // بر اساس پارامترها، اخبار مربوطه را بارگذاری کنید
   if (selectedYear && !selectedMonth) {
     news = await getNewsForYear(selectedYear);
-    links = getAvailableNewsMonths(selectedYear); // دریافت ماه‌های موجود برای آن سال
-  }
-
-  // اگر سال و ماه انتخاب شده باشد
-  if (selectedYear && selectedMonth) {
-    news = await getNewsForYearAndMonth(selectedYear, selectedMonth); // دریافت اخبار برای آن سال و ماه
+    links = getAvailableNewsMonths(selectedYear);
+  } else if (selectedYear && selectedMonth) {
+    news = await getNewsForYearAndMonth(selectedYear, selectedMonth);
     links = [];
-  }
-
-  // اگر هیچ خبری پیدا نشد
-  let newsContent = <p>No news found for the selected period.</p>;
-
-  // اگر خبری پیدا شد
-  if (news && news.length > 0) {
-    newsContent = <NewsList news={news} />;
   }
 
   if (
@@ -41,8 +32,15 @@ export default async function FilteredNewsPage({ params }) {
     (selectedMonth &&
       !getAvailableNewsMonths(selectedYear).includes(+selectedMonth))
   ) {
-    throw new Error("invalid filter.");
+    throw new Error('Invalid filter.');
   }
+
+  let newsContent = <p>No news found for the selected period.</p>;
+
+  if (news && news.length > 0) {
+    newsContent = <NewsList news={news} />;
+  }
+
   return (
     <>
       <header id="archive-header">
@@ -50,8 +48,8 @@ export default async function FilteredNewsPage({ params }) {
           <ul>
             {links.map((link) => {
               const href = selectedYear
-                ? `/archive/${selectedYear}/${link}` // لینک برای سال و ماه
-                : `/archive/${link}`; // لینک فقط برای سال
+                ? `/archive/${selectedYear}/${link}`
+                : `/archive/${link}`;
 
               return (
                 <li key={link}>

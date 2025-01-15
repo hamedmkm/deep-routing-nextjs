@@ -1,14 +1,14 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-
 import { DUMMY_NEWS } from '@/dummy-news';
 
-export default function NewsDetailPage({ params }) {
-  const newsSlug = params.slug;
-  const newsItem = DUMMY_NEWS.find((newsItem) => newsItem.slug === newsSlug);
+export default async function NewsDetailPage({ params }) {
+  // اطمینان از اینکه params به صورت آسنکرون مدیریت شود
+  const { slug } = await Promise.resolve(params); // انتظار برای بارگذاری params
+  const newsItem = DUMMY_NEWS.find((newsItem) => newsItem.slug === slug);
 
   if (!newsItem) {
-    notFound();
+    notFound(); // اگر خبری پیدا نشد، به صفحه خطا می‌رود
   }
 
   return (
